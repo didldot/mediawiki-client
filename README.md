@@ -40,3 +40,9 @@ This repo includes recommended extensions in `.vscode/extensions.json`. Open the
 ## Getting Started
 
 > Setup instructions will be added once the project scaffold is in place.
+
+## History
+
+First prompt for this project:
+
+The first step of my goal is to implement an Electron application that can fetch data from a running Mediawiki Website. The Mediawiki belongs to me and I guess it has to be prepared for REST requests? For implmenting Electron best practices the context7 plugin can be used. I will use VS Code as IDE. What plugins should be installed in VS Code for this project?

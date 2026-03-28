@@ -1,0 +1,13 @@
+{
+  "recommendations": [
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "ms-vscode.vscode-typescript-next",
+    "christian-kohler.path-intellisense",
+    "christian-kohler.npm-intellisense",
+    "usernamehw.errorlens",
+    "humao.rest-client",
+    "eamodio.gitlens",
+    "mikestead.dotenv"
+  ]
+}

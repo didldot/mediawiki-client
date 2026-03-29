@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import type { Recipe } from '../../preload/index.d'
 
 type AppState = 'logging-in' | 'ready' | 'fetching' | 'done' | 'login-error' | 'fetch-error'
 
@@ -6,7 +7,8 @@ export default function App(): React.JSX.Element {
   const [appState, setAppState] = useState<AppState>('logging-in')
   const [loginError, setLoginError] = useState<string | null>(null)
   const [title, setTitle] = useState('')
-  const [content, setContent] = useState('')
+  const [recipe, setRecipe] = useState<Recipe | null>(null)
+  const [rawContent, setRawContent] = useState<string | null>(null)
   const [fetchError, setFetchError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -24,14 +26,18 @@ export default function App(): React.JSX.Element {
     if (!title.trim()) return
     setAppState('fetching')
     setFetchError(null)
-    setContent('')
+    setRecipe(null)
+    setRawContent(null)
 
-    const res = await window.wikiAPI.fetchPage(title.trim())
+    const res = await window.wikiAPI.fetchRecipe(title.trim())
     if (res.error) {
       setFetchError(res.error)
       setAppState('fetch-error')
+    } else if (res.recipe) {
+      setRecipe(res.recipe)
+      setAppState('done')
     } else {
-      setContent(res.content ?? '')
+      setRawContent(res.content ?? '')
       setAppState('done')
     }
   }
@@ -77,9 +83,78 @@ export default function App(): React.JSX.Element {
 
       {appState === 'fetch-error' && <p style={styles.error}>{fetchError}</p>}
 
-      {appState === 'done' && (
-        <pre style={styles.content}>{content}</pre>
+      {appState === 'done' && recipe && <RecipeView recipe={recipe} />}
+
+      {appState === 'done' && rawContent !== null && (
+        <pre style={styles.content}>{rawContent}</pre>
       )}
+    </div>
+  )
+}
+
+function RecipeView({ recipe }: { recipe: Recipe }): React.JSX.Element {
+  return (
+    <div style={styles.recipe}>
+      <h2 style={styles.recipeName}>{recipe.name}</h2>
+
+      {recipe.categories.length > 0 && (
+        <p style={styles.categories}>{recipe.categories.join(' · ')}</p>
+      )}
+
+      {recipe.metadaten && <p style={styles.metadaten}>{recipe.metadaten}</p>}
+
+      {recipe.zutaten.length > 0 && (
+        <section style={styles.section}>
+          <h3 style={styles.sectionHeading}>Zutaten</h3>
+          <ul style={styles.list}>
+            {recipe.zutaten.map((item, i) => (
+              <li key={i}>{item}</li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {recipe.zubereitung.length > 0 && (
+        <section style={styles.section}>
+          <h3 style={styles.sectionHeading}>Zubereitung</h3>
+          <ol style={styles.list}>
+            {recipe.zubereitung.map((step, i) => (
+              <li key={i}>{step}</li>
+            ))}
+          </ol>
+        </section>
+      )}
+
+      {recipe.individuelle_zubereitung && (
+        <section style={styles.section}>
+          <h3 style={styles.sectionHeading}>Individuelle Zubereitung</h3>
+          <p>{recipe.individuelle_zubereitung}</p>
+        </section>
+      )}
+
+      {recipe.beilage && (
+        <section style={styles.section}>
+          <h3 style={styles.sectionHeading}>Beilage</h3>
+          <p>{recipe.beilage}</p>
+        </section>
+      )}
+
+      <div style={styles.meta}>
+        {recipe.jahreszeit && <span>Jahreszeit: {recipe.jahreszeit}</span>}
+        {recipe.unterwegs && <span>Unterwegs: {recipe.unterwegs}</span>}
+        {recipe.quelle && <span>Quelle: {recipe.quelle}</span>}
+        {recipe.buch && (
+          <span>
+            Buch: {recipe.buch}
+            {recipe.seite ? `, S. ${recipe.seite}` : ''}
+          </span>
+        )}
+        {recipe.url && (
+          <span>
+            URL: <a href={recipe.url}>{recipe.url}</a>
+          </span>
+        )}
+      </div>
     </div>
   )
 }
@@ -132,5 +207,54 @@ const styles: Record<string, React.CSSProperties> = {
     borderRadius: 4,
     fontSize: 13,
     lineHeight: 1.5
+  },
+  recipe: {
+    background: '#fafafa',
+    border: '1px solid #ddd',
+    borderRadius: 6,
+    padding: '1.5rem',
+    overflowY: 'auto',
+    maxHeight: 500
+  },
+  recipeName: {
+    marginTop: 0,
+    marginBottom: '0.25rem',
+    fontSize: 22
+  },
+  categories: {
+    color: '#666',
+    fontSize: 12,
+    marginTop: 0,
+    marginBottom: '0.75rem'
+  },
+  metadaten: {
+    color: '#555',
+    fontSize: 13,
+    marginBottom: '1rem',
+    fontStyle: 'italic'
+  },
+  section: {
+    marginBottom: '1rem'
+  },
+  sectionHeading: {
+    fontSize: 15,
+    marginBottom: '0.4rem',
+    color: '#333'
+  },
+  list: {
+    margin: 0,
+    paddingLeft: '1.4rem',
+    fontSize: 14,
+    lineHeight: 1.7
+  },
+  meta: {
+    display: 'flex',
+    flexWrap: 'wrap',
+    gap: '0.75rem',
+    marginTop: '1rem',
+    fontSize: 13,
+    color: '#555',
+    borderTop: '1px solid #e0e0e0',
+    paddingTop: '0.75rem'
   }
 }

@@ -5,5 +5,10 @@ contextBridge.exposeInMainWorld('wikiAPI', {
     ipcRenderer.invoke('wiki:login'),
 
   fetchPage: (title: string): Promise<{ content?: string; error?: string }> =>
-    ipcRenderer.invoke('wiki:fetchPage', title)
+    ipcRenderer.invoke('wiki:fetchPage', title),
+
+  fetchRecipe: (
+    title: string
+  ): Promise<{ recipe?: import('./index.d').Recipe; content?: string; error?: string }> =>
+    ipcRenderer.invoke('wiki:fetchRecipe', title)
 })
